@@ -4,7 +4,7 @@ import gym
 
 def setup_environment():
     env_args = {
-        'run_dssat_location': '/opt/dssat_pdi/run_dssat',
+        'run_dssat_location': '/opt/dssat_pdi/run_dssat', 
         'log_saving_path': './logs/dssat-pdi.log',
         'mode': 'all',
         'seed': 123456,

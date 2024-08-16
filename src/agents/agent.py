@@ -8,6 +8,7 @@ import torch.optim as optim
 from src.models.model import QNetwork
 from src.agents.replay_buffer import ReplayBuffer
 from src.utils.utils import array2str
+from transformers import DistilBertModel, DistilBertTokenizer, BertTokenizerFast
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -15,6 +16,7 @@ class Agent:
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
+        self.tokenizer = BertTokenizerFast.from_pretrained('distilbert-base-uncased', use_fast=True)
         self.qnetwork_local = QNetwork(27, action_size).to(device)
         self.qnetwork_target = QNetwork(27, action_size).to(device)
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=1e-5, betas=(0.9, 0.999))
@@ -30,7 +32,7 @@ class Agent:
 
     def act(self, state, eps):
         state_str = array2str(state)
-        token = tokenizer(state_str, add_special_tokens=True, max_length=27, truncation=True, padding='max_length', return_tensors='pt')
+        token = self.tokenizer(state_str, add_special_tokens=True, max_length=27, truncation=True, padding='max_length', return_tensors='pt')
         input_ids = token["input_ids"].to(device)
         attention_mask = token["attention_mask"].to(device)
         
@@ -50,8 +52,8 @@ class Agent:
         state_str_list = [array2str(state) for state in states]
         next_state_str_list = [array2str(next_state) for next_state in next_states]
 
-        token = tokenizer(state_str_list, add_special_tokens=True, max_length=27, truncation=True, padding='max_length', return_tensors='pt')
-        next_token = tokenizer(next_state_str_list, add_special_tokens=True, max_length=27, truncation=True, padding='max_length', return_tensors='pt')
+        token = self.tokenizer(state_str_list, add_special_tokens=True, max_length=27, truncation=True, padding='max_length', return_tensors='pt')
+        next_token = self.tokenizer(next_state_str_list, add_special_tokens=True, max_length=27, truncation=True, padding='max_length', return_tensors='pt')
 
         input_ids_batch = token['input_ids'].to(device)
         attention_mask_batch = token['attention_mask'].to(device)
